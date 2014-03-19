@@ -160,6 +160,7 @@ class ClientThread extends Thread {
 					synchronized (this) {
 						for (int i = 0; i < maxClients; i++) {
 							if (threads[i] != null && threads[i] == this) {
+								
 								int x = gameBoard.getBombermanX();
 								int y = gameBoard.getBombermanY();
 								
