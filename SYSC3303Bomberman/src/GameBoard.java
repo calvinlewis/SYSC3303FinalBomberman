@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
+// GameBoard class
 class GameBoard extends Thread{
 
 	private static char BOMBERMAN1 = 'o'; 	// 1 player
