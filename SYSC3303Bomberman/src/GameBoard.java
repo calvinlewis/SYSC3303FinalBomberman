@@ -380,53 +380,53 @@ class BombFactory extends Thread {
 			// Check for boxes
 			int newX, newY;
 
-					newX = x+1;
-					if (newX < gameBoard.length)
-						if (gameBoard[newX][y] == 'b'){
-							if(newX==Xwin && y==Ywin){
-								gameBoard[Xwin][Ywin] = DOOR;
-							}
-							else{
-								gameBoard[newX][y] = ' ';
-							}
-						}
-
-
-					newX = x-1;
-					if (newX >= 0){
-						if (gameBoard[newX][y] == 'b'){
-							if(newX==Xwin && y==Ywin){
-								gameBoard[Xwin][Ywin] = DOOR;
-							}
-							else{
-								gameBoard[newX][y] = ' ';
-							}
-						}
+			newX = x+1;
+			if (newX < gameBoard.length)
+				if (gameBoard[newX][y] == 'b'){
+					if(newX==Xwin && y==Ywin){
+						gameBoard[Xwin][Ywin] = DOOR;
 					}
-
-					newY = y+1;
-					if (newY < gameBoard.length){
-						if (gameBoard[newX][y] == 'b'){
-							if(newX==Xwin && y==Ywin){
-								gameBoard[Xwin][Ywin] = DOOR;
-							}
-							else{
-								gameBoard[newX][y] = ' ';
-							}
-						}
+					else{
+						gameBoard[newX][y] = ' ';
 					}
-					
-					newY = y-1;
-					if (newY >= 0){
-						if (gameBoard[newX][y] == 'b'){
-							if(newX==Xwin && y==Ywin){
-								gameBoard[Xwin][Ywin] = DOOR;
-							}
-							else{
-								gameBoard[newX][y] = ' ';
-							}
-						}
-					}			
+				}
+
+
+			newX = x-1;
+			if (newX >= 0){
+				if (gameBoard[newX][y] == 'b'){
+					if(newX==Xwin && y==Ywin){
+						gameBoard[Xwin][Ywin] = DOOR;
+					}
+					else{
+						gameBoard[newX][y] = ' ';
+					}
+				}
+			}
+
+			newY = y+1;
+			if (newY < gameBoard.length){
+				if (gameBoard[x][newY] == 'b'){
+					if(x==Xwin && newY==Ywin){
+						gameBoard[Xwin][Ywin] = DOOR;
+					}
+					else{
+						gameBoard[x][newY] = ' ';
+					}
+				}
+			}
+			
+			newY = y-1;
+			if (newY >= 0){
+				if (gameBoard[x][newY] == 'b'){
+					if(x==Xwin && newY==Ywin){
+						gameBoard[Xwin][Ywin] = DOOR;
+					}
+					else{
+						gameBoard[x][newY] = ' ';
+					}
+				}
+			}			
 
 		} catch (InterruptedException ex) {
 			Logger.getLogger(BombFactory.class.getName()).log(Level.SEVERE, null, ex);

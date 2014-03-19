@@ -163,6 +163,10 @@ class ClientThread extends Thread {
 								int x = gameBoard.getBombermanX();
 								int y = gameBoard.getBombermanY();
 								
+								if (x == gameBoard.Xwin && y == gameBoard.Ywin) {
+									threads[i].os.println("Player " + getClientName() + " has found the door!");
+									break;
+								}
 								
 								if (line.startsWith("U") || line.startsWith("u")) {
 									if (gameBoard.move(x, y, "UP")) {
@@ -254,6 +258,7 @@ class ClientThread extends Thread {
 				for (int i = 0; i < maxClients; i++) {
 					if (threads[i] == this) {
 						threads[i] = null;
+						
 					}
 				}
 			}
