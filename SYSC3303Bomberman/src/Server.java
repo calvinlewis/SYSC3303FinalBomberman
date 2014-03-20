@@ -1,4 +1,4 @@
-package bomberman;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -20,7 +20,8 @@ public class Server {
 
 		int portNumber = 9000;
 		
-		if (args.length < 1) {//Optional portNumber add feature
+		//Optional portNumber add feature
+		if (args.length < 1) {
 			System.out.println("portNumber= " + portNumber);
 		} else {
 			portNumber = Integer.valueOf(args[0]).intValue();
@@ -73,7 +74,7 @@ class ClientThread extends Thread {
 	private GameBoard gameBoard;
 
 	public ClientThread(Socket clientSocket, ClientThread[] threads, GameBoard board,int i) {
-                this.playernumber = i;
+        this.playernumber = i;
 		this.clientSocket = clientSocket;
 		this.threads = threads;
 		maxClients = threads.length;
@@ -124,7 +125,7 @@ class ClientThread extends Thread {
 			name = is.readLine().trim();
 			setClientName(name);
 			
-			os.println("Welcome " + getClientName() + " to Bomberman.\nTo start a game type <START_GAME>\n");
+			os.println("Welcome " + getClientName() + " to Bomberman.\nTo start a game type <START_GAME> or <JOIN_GAME> to join a game.\n");
 			
 //			Determines new user joined the game
 //			synchronized (this) {
@@ -140,7 +141,7 @@ class ClientThread extends Thread {
 			// Start game
 			String line = is.readLine();
 			
-			if (line.startsWith("START_GAME")) {
+			if (line.startsWith("START_GAME") || line.startsWith("JOIN_GAME")) {
 				
 				while (true) {
 					
