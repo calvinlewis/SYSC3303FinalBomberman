@@ -14,8 +14,8 @@ class GameBoard extends Thread{
 
         private static int  PlayerNumber;
         private static char[] BombermanList = {'o','O','0','@'};
-        private static int[][] BombermanPos = {{-1,-1}, {-1,-1}, {-1,-1}, {-1,-1}};
-        private static int[] Bombermanlives = {2, 2, 2, 2}; //decrement when lives==0
+        public static int[][] BombermanPos = {{-1,-1}, {-1,-1}, {-1,-1}, {-1,-1}};
+        public static int[] Bombermanlives = {2, 2, 2, 2}; //decrement when lives==0
 	private static char DOOR = 'D'; 
 	private static char BOX = 'b';
         public static char POWER = 'P';
@@ -398,7 +398,6 @@ class GameBoard extends Thread{
         
         public static int Powercheck(int newX, int newY){
             int i = 0;
-            int j = 0;
             while(i<4){
                 if(Powers[i][0]==newX && Powers[i][1]==newY){
                     return i;
@@ -407,6 +406,19 @@ class GameBoard extends Thread{
             }
             return -1;
         }
+        public static int Playercheck(int newX, int newY){
+            int i = 0;
+            while(i<4){
+                if(BombermanPos[i][0]==newX && BombermanPos[i][1]==newY){
+                    return i;
+                }
+                i++;
+            }
+            return -1;
+        }
+         public static void playerterminationmessage(int playernumber){
+             System.out.printf("Player %d has died!",playernumber );
+         }
 
 }
 
@@ -437,11 +449,21 @@ class BombFactory extends Thread {
 			sleep(6000);
 			gameBoard[x][y]=' ';
 
+                        if(GameBoard.Playercheck(x,y)>-1){
+                            int temp = GameBoard.Playercheck(x,y);
+                            GameBoard.Bombermanlives[temp]--;
+                            if(GameBoard.Bombermanlives[temp]<= 0){
+                                gameBoard[x][y]= ' ';
+                                GameBoard.BombermanPos[temp][0]=-1;
+                                GameBoard.BombermanPos[temp][1]=-1;
+                                GameBoard.playerterminationmessage(temp);
+                            }
+                        }
 			// Check for boxes
 			int newX, newY;
 
 			newX = x+1;
-			if (newX < gameBoard.length)
+			if (newX < gameBoard.length){
 				if (gameBoard[newX][y] == 'b'){
 					if(newX==Xwin && y==Ywin){
 						gameBoard[Xwin][Ywin] = DOOR;
@@ -453,6 +475,17 @@ class BombFactory extends Thread {
 						gameBoard[newX][y] = ' ';
 					}
 				}
+                                else if(GameBoard.Playercheck(newX,y)>-1){
+                                    int temp = GameBoard.Playercheck(newX,y);
+                                    GameBoard.Bombermanlives[temp]--;
+                                    if(GameBoard.Bombermanlives[temp]<= 0){
+                                        gameBoard[newX][y]= ' ';
+                                        GameBoard.BombermanPos[temp][0]=-1;
+                                        GameBoard.BombermanPos[temp][1]=-1;
+                                        GameBoard.playerterminationmessage(temp);
+                                    }
+                                }
+                        }
 
 
 			newX = x-1;
@@ -468,6 +501,16 @@ class BombFactory extends Thread {
 						gameBoard[newX][y] = ' ';
 					}
 				}
+                                else if(GameBoard.Playercheck(newX,y)>-1){
+                                    int temp = GameBoard.Playercheck(newX,y);
+                                    GameBoard.Bombermanlives[temp]--;
+                                    if(GameBoard.Bombermanlives[temp]<= 0){
+                                        gameBoard[newX][y]= ' ';
+                                        GameBoard.BombermanPos[temp][0]=-1;
+                                        GameBoard.BombermanPos[temp][1]=-1;
+                                        GameBoard.playerterminationmessage(temp);
+                                    }
+                                }
 			}
 
 			newY = y+1;
@@ -483,6 +526,16 @@ class BombFactory extends Thread {
 						gameBoard[x][newY] = ' ';
 					}
 				}
+                                else if(GameBoard.Playercheck(x,newY)>-1){
+                                    int temp = GameBoard.Playercheck(x,newY);
+                                    GameBoard.Bombermanlives[temp]--;
+                                    if(GameBoard.Bombermanlives[temp]<= 0){
+                                        gameBoard[x][newY]= ' ';
+                                        GameBoard.BombermanPos[temp][0]=-1;
+                                        GameBoard.BombermanPos[temp][1]=-1;
+                                        GameBoard.playerterminationmessage(temp);
+                                    }
+                                }
 			}
 			
 			newY = y-1;
@@ -498,6 +551,16 @@ class BombFactory extends Thread {
 						gameBoard[x][newY] = ' ';
 					}
 				}
+                                else if(GameBoard.Playercheck(x,newY)>-1){
+                                    int temp = GameBoard.Playercheck(x,newY);
+                                    GameBoard.Bombermanlives[temp]--;
+                                    if(GameBoard.Bombermanlives[temp]<= 0){
+                                        gameBoard[x][newY]= ' ';
+                                        GameBoard.BombermanPos[temp][0]=-1;
+                                        GameBoard.BombermanPos[temp][1]=-1;
+                                        GameBoard.playerterminationmessage(temp);
+                                    }
+                                }
 			}			
 
 		} catch (InterruptedException ex) {
