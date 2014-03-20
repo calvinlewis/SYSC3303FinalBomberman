@@ -12,19 +12,20 @@ import java.util.logging.Logger;
 // GameBoard class
 class GameBoard extends Thread{
 
-	private static char BOMBERMAN1 = 'o'; 	// 1 player
-	private static char BOMBERMAN2 = 'O';	// 2 player
-	private static char DOOR = 'D';
+        private static int  PlayerNumber;
+        private static char[] BombermanList = {'o','O','0','@'};
+        private static int[][] BombermanPos = {{-1,-1}, {-1,-1}, {-1,-1}, {-1,-1}};
+        private static int[] Bombermanlives = {2, 2, 2, 2}; //decrement when lives==0
+	private static char DOOR = 'D'; 
 	private static char BOX = 'b';
-	private static char BOMBERMAN = 'o';
-
-
+        public static char POWER = 'P';
+        private static int[][] Powers = {{-1,-1},{-1,-1},{-1,-1},{-1,-1}};   //list of the powers
+        private static int numPower;    //index for powers
+        
 	public static int Xwin;
 	public static int Ywin;
 	boolean doorset = false;
 	private char[][] gameBoard;
-	private static int[] bombermanpos1 = {-1,-1};
-	private static int[] bombermanpos2 = {-1,-1};
 	private static int bombID;
 	private int xSize, ySize, levels;
 
@@ -35,6 +36,7 @@ class GameBoard extends Thread{
 		this.ySize = y;
 		this.levels = l;
 		this.bombID = 0;
+                this.numPower = 0;
 		createBoard();
 	}
 
@@ -62,10 +64,16 @@ class GameBoard extends Thread{
 						gameBoard[i][j] = BOX;
 						if(!doorset){
 							doorset = true;
-							gameBoard[i][j] = BOX;
 							Xwin = i;
 							Ywin = j;
 						}
+                                                else{
+                                                    if(/*rand%2 ==0 &&*/ numPower<4){
+                                                        Powers[numPower][0]= i;
+                                                        Powers[numPower][1]= j;
+                                                        numPower++;
+                                                    }
+                                                }
 					}
 					else{
 						gameBoard[i][j] = ' ';
@@ -76,9 +84,7 @@ class GameBoard extends Thread{
 		}
 
 		//gameBoard[Xwin][Ywin] = DOOR;
-
-		gameBoard[0][0] = BOMBERMAN1;
-		updatebombermanpos(0,0);
+                
 
 	}
 
@@ -110,32 +116,30 @@ class GameBoard extends Thread{
 				direction.equals("DOWN") ||
 				direction.equals("LEFT") ||
 				direction.equals("RIGHT")|| 
-				direction.equals("O")    || 
-				direction.equals("o")    || 
+				direction.equals("PLAY") || 
 				direction.equals("BOMB");
 	}
 
 
 	// Method to move the bomberman to valid spaces
-	public boolean move(int x, int y, String direction){
-
+	public boolean move(int x, int y, String direction, int playernumber) {
+                
 
 		int newX=x;
 		int newY=y;
-
 		if (validMove(direction)) {
-			switch (direction) {
-
+                    switch (direction) {
+                        
 			case "BOMB":
 
-				if(x == getBombermanX() && y == getBombermanY()){
+				if(x == getBombermanX(playernumber) && y == getBombermanY(playernumber)){
 					gameBoard[x][y] = 'Q';
 				}
-				else if(move(x,y,"DOWN")!=false){
-					move(x,y,"DOWN");
+				else if(move(x,y,"DOWN", playernumber)!=false){
+					move(x,y,"DOWN", playernumber);
 				}
-				else if(move(x,y,"RIGHT")!=false){
-					move(x,y,"RIGHT");
+				else if(move(x,y,"RIGHT", playernumber)!=false){
+					move(x,y,"RIGHT", playernumber);
 				}
 				else{
 					gameBoard[x][y] = '*';
@@ -143,186 +147,237 @@ class GameBoard extends Thread{
 				BombFactory bomb = new BombFactory(gameBoard, x, y, Xwin, Ywin, DOOR);
 				bomb.start();
 				return true;
-
-			case "o":
-				BOMBERMAN = 'o';
-				if(getBombermanX()==-1){
-
-					if(gameBoard[0][0]=='O'|| gameBoard[0][0]=='Q'){
-						gameBoard[1][0]= 'o';
-						updatebombermanpos(1,0);
-					}
-					else if(gameBoard[0][0]=='*'){
-						gameBoard[0][0]='Q';
-					}
-					else{
-						gameBoard[0][0]= 'o';
-						updatebombermanpos(0,0);
-					}
-					return true;
-				}
-				else{
-					return true;
-				}
-
-			case "O":
-				BOMBERMAN = 'O';
-				if(getBombermanX()==-1){
-					if(gameBoard[0][0]=='o' || gameBoard[0][0]=='Q'){
-						gameBoard[1][0]= 'O';
-						updatebombermanpos(1,0);
-					}
-					else if(gameBoard[0][0]=='*'){
-						gameBoard[0][0]='Q';
-					}
-					else{
-						gameBoard[0][0]= 'O';
-						updatebombermanpos(0,0);
-					}
-					return true;
-				}
-				else{
-					return true;
-				}
-
+                        
+                        case "PLAY":
+                            if(gameBoard[0][0] == ' '){
+                                gameBoard[0][0] = BombermanList[playernumber];
+                                updatebombermanpos(0, 0, playernumber);
+                            }
+                            else if(gameBoard[0][1] == ' '){
+                                gameBoard[0][1] = BombermanList[playernumber];
+                                updatebombermanpos(0, 1, playernumber);
+                            }
+                            else if(gameBoard[0][2] == ' '){
+                                gameBoard[0][2] = BombermanList[playernumber];
+                                updatebombermanpos(0, 2, playernumber);
+                            }
+                            else if(gameBoard[0][3] == ' '){
+                                gameBoard[0][3] = BombermanList[playernumber];
+                                updatebombermanpos(0, 3, playernumber);
+                            }
+                            else if(gameBoard[0][4] == ' '){
+                                gameBoard[0][4] = BombermanList[playernumber];
+                                updatebombermanpos(0, 4, playernumber);
+                            }
+                            else if(gameBoard[1][0] == ' '){
+                                gameBoard[1][0] = BombermanList[playernumber];
+                                updatebombermanpos(1, 0, playernumber);
+                            }
+                            
+                            return true;
 
 			case "DOWN": 
-				newX = x+1;
-				if (newX < xSize && newX >= 0 && isEmptySpace(newX,y)) {
-					gameBoard[newX][y] = BOMBERMAN;
-					updatebombermanpos(newX, y);
-					gameBoard[x][y] = ' ';
-					return true;
-				}
-				if(newX==Xwin && newY==Ywin){
+                            newX = x+1;
+                            if(getBombermanX(playernumber)==-1){
+                                return false;
+                            }
+                            else if (newX < xSize && newX >= 0 && isEmptySpace(newX,y)) {
+                                updatebombermanpos(newX, y, playernumber);
+                                gameBoard[newX][y] = BombermanList[playernumber];
+                                if(gameBoard[x][y]=='Q'){
+                                    gameBoard[x][y] = '*';
+                                }
+                                else{
+                                    gameBoard[x][y] = ' ';
+                                }
+                                return true;
+                            }
+                            else if(newX==Xwin && newY==Ywin && gameBoard[newX][newY]!= 'b'){
+                                
+                                if(gameBoard[x][y]=='Q'){
+                                    gameBoard[x][y] = '*';
+                                }
+                                else{
+                                    gameBoard[x][y] = ' ';
+                                }
+                                updatebombermanpos(-1,-1, playernumber);
+                                System.out.printf("Player %d found door!!\n", playernumber);
+                                //driver.addLog("Player found door!!");
+                                //driver.writeLog();
 
-					gameBoard[x][y] = ' ';
-					updatebombermanpos(-1,-1);
-					System.out.println("Player found door!!");
-					//driver.addLog("Player found door!!");
-					//driver.writeLog();
 
-
-					return true;
-				}
-				break;
+                                return true;
+                            }
+                            else if(Powercheck(newX, newY)>-1 && gameBoard[newX][newY]!= 'b'){
+                                Bombermanlives[playernumber]++;
+                                System.out.printf("Player %d took power up. now has %d lives!\n",playernumber,Bombermanlives[playernumber]);
+                                if(gameBoard[x][y]=='Q'){
+                                    gameBoard[x][y] = '*';
+                                }
+                                else{
+                                    gameBoard[x][y] = ' ';
+                                }
+                                gameBoard[newX][newY]=BombermanList[playernumber];
+                                updatebombermanpos(newX,newY, playernumber);
+                                return true;
+                            }
+                            break;
 
 			case "UP": 
-				newX = x-1;
-				if (newX < xSize && newX >= 0 && isEmptySpace(newX,y)) {
-					gameBoard[newX][y] = BOMBERMAN;
-					updatebombermanpos(newX, y);
-					gameBoard[x][y] = ' ';
-					return true;
-				}
-				if(newX==Xwin && newY==Ywin){
+                            newX = x-1;
+                            if(getBombermanX(playernumber)==-1){
+                                return false;
+                            }
+                            else if (newX < xSize && newX >= 0 && isEmptySpace(newX,y)) {
+                                gameBoard[newX][y] = BombermanList[playernumber];
+                                updatebombermanpos(newX, y, playernumber);
+                                if(gameBoard[x][y]=='Q'){
+                                        gameBoard[x][y] = '*';
+                                    }
+                                    else{
+                                        gameBoard[x][y] = ' ';
+                                    }
+                                    return true;
+                            }
+                            else if(newX==Xwin && newY==Ywin && gameBoard[newX][newY]!= 'b'){
+                                if(gameBoard[x][y]=='Q'){
+                                        gameBoard[x][y] = '*';
+                                    }
+                                    else{
+                                        gameBoard[x][y] = ' ';
+                                    }
+                                    updatebombermanpos(-1,-1, playernumber);
+                                    System.out.printf("Player %d found door!!\n", playernumber);
+                                    //driver.addLog("Player found door!!");
+                                    //driver.writeLog();
 
-					gameBoard[x][y] = ' ';
-					updatebombermanpos(-1,-1);
-					System.out.println("Player found door!!");
-					//driver.addLog("Player found door!!");
-					//driver.writeLog();
 
-
-					return true;
-				}
-				break;
+                                    return true;
+                            }
+                            else if(Powercheck(newX, newY)>-1 && gameBoard[newX][newY]!= 'b'){
+                                Bombermanlives[playernumber]++;
+                                System.out.printf("Player %d took power up. now has %d lives!\n",playernumber,Bombermanlives[playernumber]);
+                                if(gameBoard[x][y]=='Q'){
+                                    gameBoard[x][y] = '*';
+                                }
+                                else{
+                                    gameBoard[x][y] = ' ';
+                                }
+                                gameBoard[newX][newY]=BombermanList[playernumber];
+                                updatebombermanpos(newX,newY, playernumber);
+                                return true;
+                            }
+                            
+                            break;
 
 			case "LEFT": 
-				newY = y-1;
-				if (newY < ySize && newY >= 0 && isEmptySpace(x,newY)) {
-					gameBoard[x][newY] = BOMBERMAN;
-					updatebombermanpos(x, newY);
-					gameBoard[x][y] = ' ';
-					return true;
-				}
-				if(newX==Xwin && newY==Ywin){
+                            newY = y-1;
+                            if(getBombermanX(playernumber)==-1){
+                                return false;
+                            }
+                            else if (newY < ySize && newY >= 0 && isEmptySpace(x,newY)) {
+                                gameBoard[x][newY] = BombermanList[playernumber];
+                                updatebombermanpos(x, newY, playernumber);
+                                if(gameBoard[x][y]=='Q'){
+                                        gameBoard[x][y] = '*';
+                                    }
+                                    else{
+                                        gameBoard[x][y] = ' ';
+                                    }
+                                    return true;
+                            }
+                            else if(newX==Xwin && newY==Ywin && gameBoard[newX][newY]!= 'b'){
+                                if(gameBoard[x][y]=='Q'){
+                                    gameBoard[x][y] = '*';
+                                }
+                                else{
+                                    gameBoard[x][y] = ' ';
+                                }
+                                updatebombermanpos(-1,-1, playernumber);
+                                System.out.printf("Player %d found door!!\n", playernumber);
+                                //driver.addLog("Player found door!!");
+                                //driver.writeLog();
 
-					gameBoard[x][y] = ' ';
-					updatebombermanpos(-1,-1);
-					System.out.println("Player found door!!");
-					//driver.addLog("Player found door!!");
-					//driver.writeLog();
 
-					return true;
-				}
-				break;
+                                return true;
+                            }
+                            else if(Powercheck(newX, newY)>-1 && gameBoard[newX][newY]!= 'b'){
+                                Bombermanlives[playernumber]++;
+                                System.out.printf("Player %d took power up. now has %d lives!\n",playernumber,Bombermanlives[playernumber]);
+                                if(gameBoard[x][y]=='Q'){
+                                    gameBoard[x][y] = '*';
+                                }
+                                else{
+                                    gameBoard[x][y] = ' ';
+                                }
+                                gameBoard[newX][newY]=BombermanList[playernumber];
+                                updatebombermanpos(newX,newY, playernumber);
+                                return true;
+                            }
+                            
+                            break;
 
 			case "RIGHT": 
-				newY = y+1;
-				if (newY < ySize && newY >= 0 && isEmptySpace(x,newY)) {
-					gameBoard[x][newY] = BOMBERMAN;
-					updatebombermanpos(x, newY);
-					gameBoard[x][y] = ' ';
-					return true;
-				}
-				if(newX==Xwin && newY==Ywin){
+                            newY = y+1;
+                            if(getBombermanX(playernumber)==-1){
+                                return false;
+                            }
+                            else if (newY < ySize && newY >= 0 && isEmptySpace(x,newY)) {
+                                gameBoard[x][newY] = BombermanList[playernumber];
+                                updatebombermanpos(x, newY, playernumber);
+                                
+                                if(gameBoard[x][y]=='Q'){
+                                        gameBoard[x][y] = '*';
+                                    }
+                                else{
+                                        gameBoard[x][y] = ' ';
+                                }
+                                return true;
+                            }
+                            else if(newX==Xwin && newY==Ywin && gameBoard[newX][newY]!= 'b'){
+                                if(gameBoard[x][y]=='Q'){
+                                        gameBoard[x][y] = '*';
+                                    }
+                                    else{
+                                        gameBoard[x][y] = ' ';
+                                    }
+                                    updatebombermanpos(-1,-1, playernumber);
+                                    System.out.printf("Player %d found door!!\n", playernumber);
+                                    //driver.addLog("Player found door!!");
+                                    //driver.writeLog();
 
-					gameBoard[x][y] = ' ';
-					updatebombermanpos(-1,-1);
-					System.out.println("Player found door!!");
-					//driver.addLog("Player found door!!");
-					//driver.writeLog();
 
-					return true;
-				}
-				break;
-
-
+                                    return true;
+                            }
+                            else if(Powercheck(newX, newY)>-1 && gameBoard[newX][newY]!= 'b'){
+                                Bombermanlives[playernumber]++;
+                                System.out.printf("Player %d took power up. now has %d lives!\n",playernumber,Bombermanlives[playernumber]);
+                                if(gameBoard[x][y]=='Q'){
+                                    gameBoard[x][y] = '*';
+                                }
+                                else{
+                                    gameBoard[x][y] = ' ';
+                                }
+                                gameBoard[newX][newY]=BombermanList[playernumber];
+                                updatebombermanpos(newX,newY, playernumber);
+                                return true;
+                            }
+                            break;
 			}
-
-		}
+                }
 		return false;
 	}
 
 
 	// Get current bomberman x position
-	public int getBombermanX() {
-
-		/*for (int i=0; i<xSize; i++) {
-			for (int j=0; j<ySize; j++) {
-				if (gameBoard[i][j] == BOMBERMAN)
-					return i;
-			}*/
-
-		if(BOMBERMAN=='o'){
-			if(bombermanpos1[0]!=-1){
-				return bombermanpos1[0];
-			}
-
-		}
-		else{
-			if(bombermanpos2[0]!=-1){
-				return bombermanpos2[0];
-			}
-		}
-		return -1;
-	}
+	public int getBombermanX(int playernumber) {
+            return BombermanPos[playernumber][0];
+        }
 
 
 	// Gets current bomberman y position
-	public int getBombermanY() {
-
-		/*for (int i=0; i<xSize; i++) {
-			for (int j=0; j<ySize; j++) {
-				if (gameBoard[i][j] == BOMBERMAN)
-					return j;
-			}
-
-		}*/
-
-		if(BOMBERMAN=='o'){
-			if(bombermanpos1[1]!=-1){
-				return bombermanpos1[1];
-			}
-
-		}
-		else{
-			if(bombermanpos2[1]!=-1){
-				return bombermanpos2[1];
-			}
-		}
-		return -1;
+	public int getBombermanY(int playernumber) {
+            return BombermanPos[playernumber][1];
 	}
 
 
@@ -336,17 +391,22 @@ class GameBoard extends Thread{
 		return randomNum;
 	}
 
-	public static void updatebombermanpos(int x, int y){
-		if(BOMBERMAN=='o'){
-			bombermanpos1[0]=x;
-			bombermanpos1[1]=y;
-
-		}
-		else{
-			bombermanpos2[0]=x;
-			bombermanpos2[1]=y;
-		}
-	}
+	public static void updatebombermanpos(int x, int y, int playernumber){
+		BombermanPos[playernumber][0]= x;
+                BombermanPos[playernumber][1]= y;
+        }
+        
+        public static int Powercheck(int newX, int newY){
+            int i = 0;
+            int j = 0;
+            while(i<4){
+                if(Powers[i][0]==newX && Powers[i][1]==newY){
+                    return i;
+                }
+                i++;
+            }
+            return -1;
+        }
 
 }
 
@@ -374,7 +434,7 @@ class BombFactory extends Thread {
 	public void run() {
 		try {
 
-			sleep(2000);
+			sleep(6000);
 			gameBoard[x][y]=' ';
 
 			// Check for boxes
@@ -386,6 +446,9 @@ class BombFactory extends Thread {
 					if(newX==Xwin && y==Ywin){
 						gameBoard[Xwin][Ywin] = DOOR;
 					}
+                                        else if(GameBoard.Powercheck(newX, y)>-1){
+                                            gameBoard[newX][y] = GameBoard.POWER;
+                                        }
 					else{
 						gameBoard[newX][y] = ' ';
 					}
@@ -398,6 +461,9 @@ class BombFactory extends Thread {
 					if(newX==Xwin && y==Ywin){
 						gameBoard[Xwin][Ywin] = DOOR;
 					}
+                                        else if(GameBoard.Powercheck(newX, y)>-1){
+                                            gameBoard[newX][y] = GameBoard.POWER;
+                                        }
 					else{
 						gameBoard[newX][y] = ' ';
 					}
@@ -410,6 +476,9 @@ class BombFactory extends Thread {
 					if(x==Xwin && newY==Ywin){
 						gameBoard[Xwin][Ywin] = DOOR;
 					}
+                                        else if(GameBoard.Powercheck(x, newY)>-1){
+                                            gameBoard[x][newY] = GameBoard.POWER;
+                                        }
 					else{
 						gameBoard[x][newY] = ' ';
 					}
@@ -422,6 +491,9 @@ class BombFactory extends Thread {
 					if(x==Xwin && newY==Ywin){
 						gameBoard[Xwin][Ywin] = DOOR;
 					}
+                                        else if(GameBoard.Powercheck(x, newY)>-1){
+                                            gameBoard[x][newY] = GameBoard.POWER;
+                                        }
 					else{
 						gameBoard[x][newY] = ' ';
 					}
