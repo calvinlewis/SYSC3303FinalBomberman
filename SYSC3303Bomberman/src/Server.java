@@ -19,7 +19,7 @@ public class Server {
 
 		int portNumber = 9000;
 		
-		if (args.length < 1) {
+		if (args.length < 1) {//Optional portNumber add feature
 			System.out.println("portNumber= " + portNumber);
 		} else {
 			portNumber = Integer.valueOf(args[0]).intValue();
@@ -38,7 +38,7 @@ public class Server {
 				int i = 0;
 				for (i = 0; i < maxClients; i++) {
 					if (threads[i] == null) {
-						(threads[i] = new ClientThread(clientSocket, threads, gameBoard)).start();
+						(threads[i] = new ClientThread(clientSocket, threads, gameBoard, i)).start();
 						break;
 					}
 				}
@@ -61,6 +61,7 @@ class ClientThread extends Thread {
 	
 	private String clientName = null;
 	private Socket clientSocket = null;
+        private int playernumber;
 
 	private DataInputStream is = null;
 	private PrintStream os = null;
@@ -70,7 +71,8 @@ class ClientThread extends Thread {
 	
 	private GameBoard gameBoard;
 
-	public ClientThread(Socket clientSocket, ClientThread[] threads, GameBoard board) {
+	public ClientThread(Socket clientSocket, ClientThread[] threads, GameBoard board,int i) {
+                this.playernumber = i;
 		this.clientSocket = clientSocket;
 		this.threads = threads;
 		maxClients = threads.length;
@@ -160,9 +162,14 @@ class ClientThread extends Thread {
 					synchronized (this) {
 						for (int i = 0; i < maxClients; i++) {
 							if (threads[i] != null && threads[i] == this) {
+<<<<<<< HEAD
 								
 								int x = gameBoard.getBombermanX();
 								int y = gameBoard.getBombermanY();
+=======
+								int x = gameBoard.getBombermanX(i);
+								int y = gameBoard.getBombermanY(i);
+>>>>>>> FETCH_HEAD
 								
 								if (x == gameBoard.Xwin && y == gameBoard.Ywin) {
 									threads[i].os.println("Player " + getClientName() + " has found the door!");
@@ -170,7 +177,7 @@ class ClientThread extends Thread {
 								}
 								
 								if (line.startsWith("U") || line.startsWith("u")) {
-									if (gameBoard.move(x, y, "UP")) {
+									if (gameBoard.move(x, y, "UP",i)) {
 										String move = "Moved: UP";
 										threads[i].os.println(move);
 				
@@ -181,7 +188,7 @@ class ClientThread extends Thread {
 									}
 								}
 								else if (line.startsWith("D") || line.startsWith("d")) {
-									if (gameBoard.move(x, y, "DOWN")) {
+									if (gameBoard.move(x, y, "DOWN",i)) {
 										String move = "Moved: DOWN";
 										threads[i].os.println(move);
 				
@@ -192,7 +199,7 @@ class ClientThread extends Thread {
 									}
 								}
 								else if (line.startsWith("L") || line.startsWith("l")) {
-									if (gameBoard.move(x, y, "LEFT")) {
+									if (gameBoard.move(x, y, "LEFT",i)) {
 										String move = "Moved: LEFT";
 										threads[i].os.println(move);
 				
@@ -203,7 +210,7 @@ class ClientThread extends Thread {
 									}
 								}
 								else if (line.startsWith("R") || line.startsWith("r")) {
-									if (gameBoard.move(x, y, "RIGHT")) {
+									if (gameBoard.move(x, y, "RIGHT",i)) {
 										String move = "Moved: RIGHT";
 										threads[i].os.println(move);
 				
@@ -214,7 +221,7 @@ class ClientThread extends Thread {
 									}
 								}
 								else if (line.startsWith("B") || line.startsWith("b")) {
-									if (gameBoard.move(x, y, "BOMB")) {
+									if (gameBoard.move(x, y, "BOMB", i)) {
 										String bomb = "Placed: BOMB";
 										threads[i].os.println(bomb);
 				
@@ -224,7 +231,17 @@ class ClientThread extends Thread {
 										threads[i].os.println(invalid);
 									}
 								}
-								
+                                                                else if (line.startsWith("P") || line.startsWith("p")) {
+									if (gameBoard.move(x, y, "PLAY", i)) {
+										String play = "Player deployed";
+										threads[i].os.println(play);
+				
+									}
+									else {
+										String invalid = "\nInvalid Move!\n";
+										threads[i].os.println(invalid);
+									}
+								}
 								break;
 							}
 						}
