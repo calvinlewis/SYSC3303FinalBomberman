@@ -32,19 +32,26 @@ public class PlayerClient implements Runnable {
 			portNumber = Integer.valueOf(args[1]).intValue();
 		}
 		
+		createSocket(host, portNumber);
+	}
+	
+	public static boolean createSocket(String host, int port) {
+		
 		// Open socket on given host and port number
 		try {
 			
-			clientSocket = new Socket(host, portNumber);
+			clientSocket = new Socket(host, port);
 			input = new BufferedReader(new InputStreamReader(System.in));
 			os = new PrintStream(clientSocket.getOutputStream());
 			is = new DataInputStream(clientSocket.getInputStream());
 			
 		} catch (UnknownHostException e) {
-			System.err.println("Don't know about host " + host);
+			//System.err.println("Don't know about host " + host);
+			return false;
 		} catch (IOException e) {
-			System.err.println("Couldn't get I/O for the connection to the host "
-					+ host);
+			//System.err.println("Couldn't get I/O for the connection to the host "
+			//		+ host);
+			return false;
 		}
 		
 		// Create PlayerClient thread to read from Server
@@ -61,8 +68,11 @@ public class PlayerClient implements Runnable {
 				clientSocket.close();
 			} catch (IOException e) {
 				System.err.println("IOException:  " + e);
+				return false;
 			}
+			return true;
 		}
+		return true;	
 	}
 	
 	@Override
@@ -80,6 +90,11 @@ public class PlayerClient implements Runnable {
 		} catch (IOException e) {
 			System.err.println("IOException:  " + e);
 		}
+	}
+	
+	public boolean testEmptyBuffer() {
+
+		return createSocket("localhost", 5555);
 	}
 
 }

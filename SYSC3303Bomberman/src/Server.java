@@ -63,7 +63,7 @@ class ClientThread extends Thread {
 	
 	private String clientName = null;
 	private Socket clientSocket = null;
-        private int playernumber;
+    private int playernumber;
 
 	private DataInputStream is = null;
 	private PrintStream os = null;
@@ -127,15 +127,7 @@ class ClientThread extends Thread {
 			
 			os.println("Welcome " + getClientName() + " to Bomberman.\nTo start a game type <START_GAME> or <JOIN_GAME> to join a game.\n");
 			
-//			Determines new user joined the game
-//			synchronized (this) {
-//				
-//				for (int i = 0; i < maxClientsCount; i++) {
-//					if (threads[i] != null && threads[i] != this) {
-//						threads[i].os.println("*** A new player " + getClientName() + " has joined the game!");
-//					}
-//				}
-//			}
+
 			
 			
 			// Start game
@@ -173,7 +165,7 @@ class ClientThread extends Thread {
 
 								
 								if (x == gameBoard.Xwin && y == gameBoard.Ywin) {
-									threads[i].os.println("Player " + getClientName() + " has found the door!");
+									this.os.println("Player " + getClientName() + " has found the door!");
 									break;
 								}
 								
@@ -257,21 +249,32 @@ class ClientThread extends Thread {
 							}
 						}
 					}
-				
+					
 
 				}
+			}
+			
 				
-//				// Client has left game
+//				//Determines new user joined the game
 //				synchronized (this) {
-//					for (int i = 0; i < maxClientsCount; i++) {
-//						if (threads[i] != null && threads[i] != this
-//								&& threads[i].clientName != null) {
-//							threads[i].os.println("*** The player " + getClientName() + " has left the game");
+//					
+//					for (int i = 0; i < maxClients; i++) {
+//						if (threads[i] != null && threads[i] != this) {
+//							threads[i].os.println("\nA new player " + getClientName() + " has joined the game!");
 //						}
 //					}
 //				}
-			}
-			
+//			
+//			// Client has left game
+//			synchronized (this) {
+//				for (int i = 0; i < maxClients; i++) {
+//					if (threads[i] != null && threads[i] != this
+//							&& threads[i].clientName != null) {
+//						threads[i].os.println("The player " + getClientName() + " has left the game");
+//					}
+//				}
+//			}
+				
 			os.println("Game ended...");
 			// Set left player to null so new client can join
 			synchronized (this) {
