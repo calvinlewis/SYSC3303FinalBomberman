@@ -32,7 +32,7 @@ Game behaviours:
 1. Start the server/game
 2. Make another PlayerClient in new terminal tab
 3. Move player as you wish (u = UP, d = DOWN, l = LEFT, r = RIGHT, b = BOMB)
-4. Attempt to move PlayerClient's on top of each other, will not work and game will display "Invalid move!"
+4. Attempt to move PlayerClient's on top of each other (one goes right, one goes left), will not work and game will display "Invalid move!"
     -  Same case for enemies
 5. Find power-ups; will be displayed if power-up is hidden after bombing a box
 6. Bombs will deploy after 3 seconds of the BombFactory thread sleeping
