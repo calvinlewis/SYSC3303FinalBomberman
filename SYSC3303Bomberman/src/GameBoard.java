@@ -10,6 +10,7 @@ import static java.lang.Thread.sleep;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.Semaphore;
 
 // GameBoard class
 class GameBoard extends Thread{
@@ -651,6 +652,7 @@ class Enemy extends Thread {
     @Override
     public synchronized void run() {
         while(enemiespos[enemynum][0]!=-1){
+            
             if(x+1<boardX && gameBoard[x+1][y]== ' ' ){
                 gameBoard[x][y]=' ';
                 x=x+1;
@@ -681,13 +683,14 @@ class Enemy extends Thread {
             }
             
             
-
-        }
+            
             try {            
                 sleep(8000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Enemy.class.getName()).log(Level.SEVERE, null, ex);
-            }    
+            } 
+        }
+               
     }
     
 
