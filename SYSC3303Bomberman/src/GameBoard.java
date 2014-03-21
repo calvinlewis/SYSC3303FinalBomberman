@@ -450,6 +450,9 @@ class GameBoard extends Thread{
 	public static void playerterminationmessage(int playernumber){
 		System.out.printf("Player %d has died!",playernumber );
 	}
+        public static void Message(){
+		System.out.printf("enemy has attacked a player!");
+	}
 
 }
 
@@ -474,7 +477,7 @@ class BombFactory extends Thread {
 
 
 	@Override
-	public synchronized void run() {
+	public void run() {
 		try {
 
 			sleep(2000);
@@ -629,10 +632,7 @@ class Enemy extends Thread {
     char[][] gameBoard;
     int x;
     int y;
-    int newX;
-    int newY;
     int enemynum;
-    GameBoard gb;
     int[][] enemiespos;
     int boardX;
     int boardY;
@@ -642,8 +642,6 @@ class Enemy extends Thread {
             gameBoard = game;
             this.x = x;
             this.y = y;
-            int newX = x;
-            int newY = y;
             this.enemynum = enemynum;
             this.enemiespos = enemiespos;
             this.boardX = boardX;
@@ -652,42 +650,122 @@ class Enemy extends Thread {
 
 
     @Override
-    public synchronized void run() {
+    public void run() {
+        
         while(enemiespos[enemynum][0]!=-1){
-            
-            if(x+1<boardX && gameBoard[x+1][y]== ' ' ){
-                gameBoard[x][y]=' ';
-                x=x+1;
-                gameBoard[x][y]='e';
-                enemiespos[enemynum][0]=x;
-                enemiespos[enemynum][1]=y;
-            }
-            else if(x-1>0 && gameBoard[x-1][y]== ' ' ){
-                gameBoard[x][y]=' ';
-                x=x-1;
-                gameBoard[x][y]='e';
-                enemiespos[enemynum][0]=x;
-                enemiespos[enemynum][1]=y;
-            }
-            else if(y+1<boardY && gameBoard[x][y+1]== ' '){
-                gameBoard[x][y]=' ';
-                y=y+1;
-                gameBoard[x][y]='e';
-                enemiespos[enemynum][0]=x;
-                enemiespos[enemynum][1]=y;
-            }
-            else if(y-1>0 && gameBoard[x][y-1]== ' '){
-                gameBoard[x][y]=' ';
-                y=y-1;
-                gameBoard[x][y]='e';
-                enemiespos[enemynum][0]=x;
-                enemiespos[enemynum][1]=y;
+            if(x+1<boardX &&(gameBoard[x+1][y]== ' ' || GameBoard.Playercheck(x+1,y) >-1 )){
+                if(gameBoard[x+1][y]== ' '){
+                    gameBoard[x][y]=' ';
+                    
+                    gameBoard[x+1][y]='e';
+                    enemiespos[enemynum][0]=x+1;
+                    enemiespos[enemynum][1]=y;
+                    x=x+1;
+                }
+                else if (GameBoard.Playercheck(x+1,y) >-1 ){
+                    
+                    int temp = GameBoard.Playercheck(x+1,y);
+                    GameBoard.Bombermanlives[temp]--;
+                    GameBoard.Message();
+                    
+                    if(GameBoard.Bombermanlives[temp]<= 0){
+                        gameBoard[x][y]=' ';
+                        gameBoard[x+1][y]='e';
+                        enemiespos[enemynum][0]=x+1;
+                        enemiespos[enemynum][1]=y;
+                        x=x+1;
+                        GameBoard.BombermanPos[temp][0]=-1;
+                        GameBoard.BombermanPos[temp][1]=-1;
+                        GameBoard.playerterminationmessage(temp);
+                    }
+                }
             }
             
+            else if(x-1>0&&(gameBoard[x-1][y]== ' ' || GameBoard.Playercheck(x-1,y) >-1 )){
+                if(gameBoard[x-1][y]== ' '){
+                    gameBoard[x][y]=' ';
+                    
+                    gameBoard[x-1][y]='e';
+                    enemiespos[enemynum][0]=x-1;
+                    enemiespos[enemynum][1]=y;
+                    x=x-1;
+                }
+                else if(GameBoard.Playercheck(x-1,y)>-1){
+                    
+                    int temp = GameBoard.Playercheck(x-1,y);
+                    GameBoard.Bombermanlives[temp]--;
+                    GameBoard.Message();
+                    if(GameBoard.Bombermanlives[temp]<= 0){
+                        gameBoard[x][y]=' ';
+                        gameBoard[x-1][y]='e';
+                        enemiespos[enemynum][0]=x-1;
+                        enemiespos[enemynum][1]=y;
+                        x=x-1;
+                        GameBoard.BombermanPos[temp][0]=-1;
+                        GameBoard.BombermanPos[temp][1]=-1;
+                        GameBoard.playerterminationmessage(temp);
+                    }
+                }  
+            }
+            else if(y+1<boardY&&(gameBoard[x][y+1]== ' ' || GameBoard.Playercheck(x,y+1) >-1 )){
+                if(gameBoard[x][y+1]== ' '){
+                    gameBoard[x][y]=' ';
+                    
+                    gameBoard[x][y+1]='e';
+                    enemiespos[enemynum][0]=x;
+                    enemiespos[enemynum][1]=y+1;
+                    y=y+1;
+                }
+
+                else if(GameBoard.Playercheck(x,y+1)>-1){
+                    
+                    int temp = GameBoard.Playercheck(x,y+1);
+                    GameBoard.Bombermanlives[temp]--;
+                    GameBoard.Message();
+                    if(GameBoard.Bombermanlives[temp]<= 0){
+                        gameBoard[x][y]=' ';
+                        gameBoard[x][y+1]='e';
+                        enemiespos[enemynum][0]=x;
+                        enemiespos[enemynum][1]=y+1;
+                        y=y+1;
+                        GameBoard.BombermanPos[temp][0]=-1;
+                        GameBoard.BombermanPos[temp][1]=-1;
+                        GameBoard.playerterminationmessage(temp);
+                    }
+                }
+                
+            }
+            else if(y-1>0&&(gameBoard[x][y-1]== ' ' || GameBoard.Playercheck(x,y-1) >-1 )){
+                if(gameBoard[x][y-1]== ' '){
+                    gameBoard[x][y]=' ';
+                    
+                    gameBoard[x][y-1]='e';
+                    enemiespos[enemynum][0]=x;
+                    enemiespos[enemynum][1]=y-1;
+                    y=y-1;
+                }
+
+                else if(GameBoard.Playercheck(x,y)>-1){
+                    
+                    int temp = GameBoard.Playercheck(x,y-1);
+                    GameBoard.Bombermanlives[temp]--;
+                    GameBoard.Message();
+                    if(GameBoard.Bombermanlives[temp]<= 0){
+                        gameBoard[x][y]=' ';
+                        gameBoard[x][y-1]='e';
+                        enemiespos[enemynum][0]=x;
+                        enemiespos[enemynum][1]=y-1;
+                        y=y-1;
+                        GameBoard.BombermanPos[temp][0]=-1;
+                        GameBoard.BombermanPos[temp][1]=-1;
+                        GameBoard.playerterminationmessage(temp);
+                    }
+                }
+            }
             
             
             try {            
-                sleep(8000);
+                sleep(4000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Enemy.class.getName()).log(Level.SEVERE, null, ex);
             } 
