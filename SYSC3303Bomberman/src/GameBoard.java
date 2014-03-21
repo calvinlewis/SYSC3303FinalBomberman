@@ -167,30 +167,32 @@ class GameBoard extends Thread{
 				return true;
 
 			case "PLAY":
-				if(gameBoard[0][0] == ' '){
-					gameBoard[0][0] = BombermanList[playernumber];
-					updatebombermanpos(0, 0, playernumber);
-				}
-				else if(gameBoard[0][1] == ' '){
-					gameBoard[0][1] = BombermanList[playernumber];
-					updatebombermanpos(0, 1, playernumber);
-				}
-				else if(gameBoard[0][2] == ' '){
-					gameBoard[0][2] = BombermanList[playernumber];
-					updatebombermanpos(0, 2, playernumber);
-				}
-				else if(gameBoard[0][3] == ' '){
-					gameBoard[0][3] = BombermanList[playernumber];
-					updatebombermanpos(0, 3, playernumber);
-				}
-				else if(gameBoard[0][4] == ' '){
-					gameBoard[0][4] = BombermanList[playernumber];
-					updatebombermanpos(0, 4, playernumber);
-				}
-				else if(gameBoard[1][0] == ' '){
-					gameBoard[1][0] = BombermanList[playernumber];
-					updatebombermanpos(1, 0, playernumber);
-				}
+                                if(BombermanPos[playernumber][0]== -1){
+                                    if(gameBoard[0][0] == ' '){
+                                            gameBoard[0][0] = BombermanList[playernumber];
+                                            updatebombermanpos(0, 0, playernumber);
+                                    }
+                                    else if(gameBoard[0][1] == ' '){
+                                            gameBoard[0][1] = BombermanList[playernumber];
+                                            updatebombermanpos(0, 1, playernumber);
+                                    }
+                                    else if(gameBoard[0][2] == ' '){
+                                            gameBoard[0][2] = BombermanList[playernumber];
+                                            updatebombermanpos(0, 2, playernumber);
+                                    }
+                                    else if(gameBoard[0][3] == ' '){
+                                            gameBoard[0][3] = BombermanList[playernumber];
+                                            updatebombermanpos(0, 3, playernumber);
+                                    }
+                                    else if(gameBoard[0][4] == ' '){
+                                            gameBoard[0][4] = BombermanList[playernumber];
+                                            updatebombermanpos(0, 4, playernumber);
+                                    }
+                                    else if(gameBoard[1][0] == ' '){
+                                            gameBoard[1][0] = BombermanList[playernumber];
+                                            updatebombermanpos(1, 0, playernumber);
+                                    }
+                                }
 
 				return true;
 
