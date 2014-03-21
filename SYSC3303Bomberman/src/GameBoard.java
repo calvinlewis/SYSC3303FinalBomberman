@@ -6,6 +6,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Random;
 import static java.lang.System.exit;
+import static java.lang.Thread.sleep;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,6 +30,11 @@ class GameBoard extends Thread{
 	private char[][] gameBoard;
 	private static int bombID;
 	private int xSize, ySize, levels;
+        
+        private static int numenemies = 0;
+        private static int enemynumber = 0;
+        public static int[][] enemiespos = {{-1,-1}, {-1,-1}, {-1,-1}, {-1,-1}};
+        private static int maxenemies = 1;
 
 	//TestDriver  driver = new TestDriver();
 
@@ -80,15 +86,25 @@ class GameBoard extends Thread{
 						gameBoard[i][j] = ' ';
 					}
 				}
+                                
 
 			}
 		}
-
-		//gameBoard[Xwin][Ywin] = DOOR;
-
+                for (int i=xSize-1; i>0; i--) {
+                    for (int j=ySize-1; j>0; j--) {
+                        if(maxenemies!=numenemies && gameBoard[i][j] == ' '){
+                            gameBoard[i][j] = 'e';
+                            enemiespos[numenemies][0] = i;
+                            enemiespos[numenemies][1] = j;
+                            Enemy enemy = new Enemy(gameBoard, i, j, numenemies, enemiespos, xSize, ySize);
+                            enemy.start();
+                            numenemies++;
+                        }
+                    }
+                }
 
 	}
-
+        
 	// Prints current game board
 	public String printBoard() {
 
@@ -417,6 +433,17 @@ class GameBoard extends Thread{
 		}
 		return -1;
 	}
+        public static int EnemyCheck(int newX, int newY){
+		int i = 0;
+		while(i<maxenemies){
+			if(enemiespos[i][0]==newX && enemiespos[i][1]==newY){
+				return i;
+			}
+			i++;
+		}
+		return -1;
+	}
+        
 	public static void playerterminationmessage(int playernumber){
 		System.out.printf("Player %d has died!",playernumber );
 	}
@@ -444,7 +471,7 @@ class BombFactory extends Thread {
 
 
 	@Override
-	public void run() {
+	public synchronized void run() {
 		try {
 
 			sleep(2000);
@@ -486,6 +513,12 @@ class BombFactory extends Thread {
 						GameBoard.playerterminationmessage(temp);
 					}
 				}
+                                else if(GameBoard.EnemyCheck(newX,y)>-1){
+                                    int temp = GameBoard.EnemyCheck(newX,y);
+                                        gameBoard[newX][y] = ' ';
+                                        GameBoard.enemiespos[temp][0]=-1;
+					GameBoard.enemiespos[temp][1]=-1;
+                                }
 			}
 
 
@@ -512,6 +545,12 @@ class BombFactory extends Thread {
 						GameBoard.playerterminationmessage(temp);
 					}
 				}
+                                else if(GameBoard.EnemyCheck(newX,y)>-1){
+                                    int temp = GameBoard.EnemyCheck(newX,y);
+                                        gameBoard[newX][y] = ' ';
+                                        GameBoard.enemiespos[temp][0]=-1;
+					GameBoard.enemiespos[temp][1]=-1;
+                                }
 			}
 
 			newY = y+1;
@@ -537,6 +576,12 @@ class BombFactory extends Thread {
 						GameBoard.playerterminationmessage(temp);
 					}
 				}
+                                else if(GameBoard.EnemyCheck(x,newY)>-1){
+                                    int temp = GameBoard.EnemyCheck(x, newY);
+                                        gameBoard[x][newY] = ' ';
+                                        GameBoard.enemiespos[temp][0]=-1;
+					GameBoard.enemiespos[temp][1]=-1;
+                                }
 			}
 
 			newY = y-1;
@@ -562,6 +607,12 @@ class BombFactory extends Thread {
 						GameBoard.playerterminationmessage(temp);
 					}
 				}
+                                else if(GameBoard.EnemyCheck(x,newY)>-1){
+                                    int temp = GameBoard.EnemyCheck(x, newY);
+                                        gameBoard[x][newY] = ' ';
+                                        GameBoard.enemiespos[temp][0]=-1;
+					GameBoard.enemiespos[temp][1]=-1;
+                                }
 			}			
 
 		} catch (InterruptedException ex) {
@@ -569,5 +620,75 @@ class BombFactory extends Thread {
 		}
 
 	}
+
+}
+class Enemy extends Thread {
+    char[][] gameBoard;
+    int x;
+    int y;
+    int newX;
+    int newY;
+    int enemynum;
+    GameBoard gb;
+    int[][] enemiespos;
+    int boardX;
+    int boardY;
+
+
+    Enemy(char[][] game, int x, int y, int enemynum, int[][] enemiespos, int boardX, int boardY){
+            gameBoard = game;
+            this.x = x;
+            this.y = y;
+            int newX = x;
+            int newY = y;
+            this.enemynum = enemynum;
+            this.enemiespos = enemiespos;
+            this.boardX = boardX;
+            this.boardY = boardY;
+    }
+
+
+    @Override
+    public synchronized void run() {
+        while(enemiespos[enemynum][0]!=-1){
+            if(x+1<boardX && gameBoard[x+1][y]== ' ' ){
+                gameBoard[x][y]=' ';
+                x=x+1;
+                gameBoard[x][y]='e';
+                enemiespos[enemynum][0]=x;
+                enemiespos[enemynum][1]=y;
+            }
+            else if(x-1>0 && gameBoard[x-1][y]== ' ' ){
+                gameBoard[x][y]=' ';
+                x=x-1;
+                gameBoard[x][y]='e';
+                enemiespos[enemynum][0]=x;
+                enemiespos[enemynum][1]=y;
+            }
+            else if(y+1<boardY && gameBoard[x][y+1]== ' '){
+                gameBoard[x][y]=' ';
+                y=y+1;
+                gameBoard[x][y]='e';
+                enemiespos[enemynum][0]=x;
+                enemiespos[enemynum][1]=y;
+            }
+            else if(y-1>0 && gameBoard[x][y-1]== ' '){
+                gameBoard[x][y]=' ';
+                y=y-1;
+                gameBoard[x][y]='e';
+                enemiespos[enemynum][0]=x;
+                enemiespos[enemynum][1]=y;
+            }
+            
+            
+
+        }
+            try {            
+                sleep(8000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Enemy.class.getName()).log(Level.SEVERE, null, ex);
+            }    
+    }
+    
 
 }
