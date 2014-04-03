@@ -36,8 +36,6 @@ public class ConcurrencyTestCase {
     
 	@Test
 	public void buferFull() {
-		
-		client.testFullBuffer();
 
 	}
 	
