@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 import java.util.concurrent.Semaphore;
 
 // GameBoard class
-class GameBoard extends Thread{
+ class GameBoard extends Thread{
 
 	private static int  PlayerNumber;
 	private static char[] BombermanList = {'o','O','0','@'};
@@ -25,12 +25,12 @@ class GameBoard extends Thread{
 	private static int[][] Powers = {{-1,-1},{-1,-1},{-1,-1},{-1,-1}};   //list of the powers
 	private static int numPower;    //index for powers
 
-	public int Xwin;
-	public int Ywin;
-	boolean doorset = false;
-	private char[][] gameBoard;
+	public static int Xwin;
+	public static int Ywin;
+	static boolean doorset = false;
+	private static char[][] gameBoard;
 	private static int bombID;
-	private int xSize, ySize, levels;
+	private static int xSize, ySize, levels;
         
         private static int numenemies = 0;
         private static int enemynumber = 0;
@@ -52,10 +52,9 @@ class GameBoard extends Thread{
 		return gameBoard;
 	}
 
-	public void createBoard() {
+	public static void createBoard() {
 
 		gameBoard = new char[xSize][ySize];
-
 		for (int i=0; i<xSize; i++) {
 			for (int j=0; j<ySize; j++) {
 
@@ -122,13 +121,13 @@ class GameBoard extends Thread{
 	}
 
 	// Checks for an empty space for the bomberman to move
-	public boolean isEmptySpace(int x, int y) {
+	public static boolean isEmptySpace(int x, int y) {
 		return gameBoard[x][y] == ' '; 
 	}
 
 
 	// Makes sure there is a valid command line argument
-	public boolean validMove(String direction) {
+	public static boolean validMove(String direction) {
 
 		return direction.equals("UP") ||
 				direction.equals("DOWN") ||
@@ -140,11 +139,12 @@ class GameBoard extends Thread{
 
 
 	// Method to move the bomberman to valid spaces
-	public boolean move(int x, int y, String direction, int playernumber) {
+	public static boolean move(int x, int y, String direction, int playernumber) {
 
 
 		int newX=x;
 		int newY=y;
+                
 		if (validMove(direction)) {
 			switch (direction) {
 
@@ -222,6 +222,7 @@ class GameBoard extends Thread{
 					}
 					updatebombermanpos(-1,-1, playernumber);
 					System.out.printf("Player %d found door!!\n", playernumber);
+                                        NewLevel(playernumber);
 					//driver.addLog("Player found door!!");
 					//driver.writeLog();
 
@@ -268,6 +269,7 @@ class GameBoard extends Thread{
 					}
 					updatebombermanpos(-1,-1, playernumber);
 					System.out.printf("Player %d found door!!\n", playernumber);
+                                        NewLevel(playernumber);
 					//driver.addLog("Player found door!!");
 					//driver.writeLog();
 
@@ -315,6 +317,7 @@ class GameBoard extends Thread{
 					}
 					updatebombermanpos(-1,-1, playernumber);
 					System.out.printf("Player %d found door!!\n", playernumber);
+                                        NewLevel(playernumber);
 					//driver.addLog("Player found door!!");
 					//driver.writeLog();
 
@@ -363,6 +366,7 @@ class GameBoard extends Thread{
 					}
 					updatebombermanpos(-1,-1, playernumber);
 					System.out.printf("Player %d found door!!\n", playernumber);
+                                        NewLevel(playernumber);
 					//driver.addLog("Player found door!!");
 					//driver.writeLog();
 
@@ -390,13 +394,13 @@ class GameBoard extends Thread{
 
 
 	// Get current bomberman x position
-	public int getBombermanX(int playernumber) {
+	public static int getBombermanX(int playernumber) {
 		return BombermanPos[playernumber][0];
 	}
 
 
 	// Gets current bomberman y position
-	public int getBombermanY(int playernumber) {
+	public static int getBombermanY(int playernumber) {
 		return BombermanPos[playernumber][1];
 	}
 
@@ -448,10 +452,38 @@ class GameBoard extends Thread{
 	}
         
 	public static void playerterminationmessage(int playernumber){
-		System.out.printf("Player %d has died!",playernumber );
+		System.out.printf("Player %d has died!, numenemies is now: %d\n",playernumber, numenemies );
+                numenemies--;
+                
 	}
         public static void Message(){
 		System.out.printf("enemy has attacked a player!");
+	}
+        public static void NewLevel(int playerwhowon){
+            System.out.printf("Now on new level!\n");
+            int i = 0;
+            int[] thecontinuingplayers = {0,0,0,0};
+            thecontinuingplayers[playerwhowon]=1;
+            boolean refreshplayer;
+            doorset = false;
+            while(i<4){
+               if(BombermanPos[i][0]!=-1){
+                   gameBoard[BombermanPos[i][0]][BombermanPos[i][1]] = ' ';
+                   BombermanPos[i][0]=-1;
+                   BombermanPos[i][1]=-1;
+                   thecontinuingplayers[i]=1;
+                   
+               }
+               i++;
+            }
+            i = 0;
+            createBoard();
+            while(i<4){
+                if(thecontinuingplayers[i]==1){    
+                    refreshplayer = move(-1, -1, "PLAY", i);
+                }
+                i++; 
+            }
 	}
 
 }
@@ -491,6 +523,7 @@ class BombFactory extends Thread {
 					GameBoard.BombermanPos[temp][0]=-1;
 					GameBoard.BombermanPos[temp][1]=-1;
 					GameBoard.playerterminationmessage(temp);
+                                        
 				}
 			}
 			// Check for boxes
