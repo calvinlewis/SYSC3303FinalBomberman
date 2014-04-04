@@ -1,342 +1,200 @@
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.net.ServerSocket;
+import static java.lang.Thread.sleep;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
-import java.awt.event.*;
-import java.awt.Dimension;
 
 
-public class Server {
+public class PlayerClient implements Runnable {
 
-	private static ServerSocket serverSocket = null;
 	private static Socket clientSocket = null;
-
-	private static final int maxClients = 4;
-	private static final ClientThread[] threads = new ClientThread[maxClients];
-	public static boolean Playing = true;
-	private static GameBoard gameBoard = new GameBoard(15,15,1);
+	public static PrintStream os = null;
+	public static DataInputStream is = null;
         public static JLabel label;
-        public static EndGame endgame = new EndGame();
-        public static JButton end = new JButton("End game");
-        public static JFrame frame = new JFrame("Server console");
-        
-        public void initialize(){
-            
-        }
-	public static void main(String args[]) {
-                       
+        public static JButton bomb = new JButton("bomb");
+        public static JButton left = new JButton("left");
+        public static JButton right = new JButton("right");
+        public static JButton up = new JButton("up");
+        public static JButton down = new JButton("down");
+	public static BufferedReader input = null;
+	private static boolean closed = false;
+	public static JFrame frame = new JFrame("Client console");
+        public static clientbuttons buttonlistener = new clientbuttons ();
+	
+	public static void main(String[] args) {
                 label = new JLabel();
-                frame.setMinimumSize(new Dimension(500, 200));
+                
+                label.setFont(new Font("Courier", Font.PLAIN, 12));
+                frame.setMinimumSize(new Dimension(500, 500));
                 frame.setBounds(100,100,450,300);
-                label.setText("Clients can be run now to play the game. To quit, press end game.");
                 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 frame.pack();
                 frame.setVisible(true);
-                frame.setLayout(new BorderLayout());
-                end.addActionListener(endgame);
-                frame.add(label, BorderLayout.EAST);
-                frame.add(end, BorderLayout.WEST);
+                bomb.addActionListener(buttonlistener);
+                up.addActionListener(buttonlistener);
+                down.addActionListener(buttonlistener);
+                left.addActionListener(buttonlistener);
+                right.addActionListener(buttonlistener);
                 
+                GridBagLayout gridBag = new GridBagLayout();
+                GridBagConstraints cons = new GridBagConstraints();
+        
+                cons.fill = GridBagConstraints.BOTH;
+                
+                
+                frame.setLayout(gridBag);
+                
+                cons.gridx = 2;
+                cons.gridy = 1;
+                gridBag.setConstraints(label, cons);
+                frame.add(label);
+                
+                cons.gridx = 2;
+                cons.gridy = 6;
+                gridBag.setConstraints(down, cons);
+                frame.add(down);
+                
+                cons.gridx = 2;
+                cons.gridy = 4;
+                gridBag.setConstraints(up, cons);
+                frame.add(up);
+                
+                cons.gridx = 3;
+                cons.gridy = 5;
+                gridBag.setConstraints(right, cons);
+                frame.add(right);
+                
+                cons.gridx = 2;
+                cons.gridy = 5;
+                gridBag.setConstraints(bomb, cons);
+                frame.add(bomb);
+                
+                cons.gridx = 1;
+                cons.gridy = 5;
+                gridBag.setConstraints(left, cons);
+                frame.add(left);
                 
 		int portNumber = 9000;
+		String host = "localhost";
 		
-		//Optional portNumber add feature
-		if (args.length < 1) {
-			System.out.println("portNumber= " + portNumber);
+		if (args.length < 2) {
+			System.out.println("host= " + host + ", portNumber= " + portNumber);
 		} else {
-			portNumber = Integer.valueOf(args[0]).intValue();
+			host = args[0];
+			portNumber = Integer.valueOf(args[1]).intValue();
 		}
 		
-		try {
-			serverSocket = new ServerSocket(portNumber);
-		} catch (IOException e) {
-			System.out.println("IOException: " + e);
-		}
-		QuitCheck check = new QuitCheck();
-                check.start();
-                
-		// Accepts max number of clients (4) to server
-		while (true) {
-			try {
-				clientSocket = serverSocket.accept();
-				int i = 0;
-				for (i = 0; i < maxClients; i++) {
-					if (threads[i] == null) {
-						(threads[i] = new ClientThread(clientSocket, threads, gameBoard, i)).start();
-						break;
-					}
-				}
-				if (i == maxClients) {
-					PrintStream os = new PrintStream(clientSocket.getOutputStream());
-					os.println("Server too busy. Try later.");
-					os.close();
-					clientSocket.close();
-				}
-			} catch (IOException e) {
-				System.out.println("IOException" + e);
-			}
-                        
-		}
-                
-	}
-        
-}
-
-
-class ClientThread extends Thread {
-	
-	private String clientName = null;
-	private Socket clientSocket = null;
-        private int playernumber;
-
-	private DataInputStream is = null;
-	private PrintStream os = null;
-	
-	private final ClientThread[] threads;
-	private int maxClients;
-	private GameBoard gameBoard;
-	public ClientThread(Socket clientSocket, ClientThread[] threads, GameBoard board,int i) {
-        this.playernumber = i;
-		this.clientSocket = clientSocket;
-		this.threads = threads;
-		maxClients = threads.length;
-		this.gameBoard = board;
+		createSocket(host, portNumber);
 	}
 	
-	public int getMaxClients() {
-		return maxClients;
-	}
-
-	public void setMaxClients(int maxClients) {
-		this.maxClients = maxClients;
-	}
-
-	public ClientThread[] getThreads() {
-		return threads;
-	}
-	
-	public String getClientName() {
-		return clientName;
-	}
-
-	public void setClientName(String clientName) {
-		this.clientName = clientName;
-	}
-
-	public Socket getClientSocket() {
-		return clientSocket;
-	}
-
-	public void setClientSocket(Socket clientSocket) {
-		this.clientSocket = clientSocket;
-	}
-
-	public void run() {
-
-		int maxClient = getMaxClients();
-		ClientThread[] threads = getThreads();
+	public static boolean createSocket(String host, int port) {
 		
+		// Open socket on given host and port number
 		try {
-
-			is = new DataInputStream(clientSocket.getInputStream());
+			
+			clientSocket = new Socket(host, port);
+			input = new BufferedReader(new InputStreamReader(System.in));
 			os = new PrintStream(clientSocket.getOutputStream());
+			is = new DataInputStream(clientSocket.getInputStream());
 			
-			//Get PlayerClient's name
-			String name;
-			os.println("Enter your name: ");
-			name = is.readLine().trim();
-			setClientName(name);
-			
-			os.println("Welcome " + getClientName() + " to Bomberman.\nTo start a game type <START_GAME> or <JOIN_GAME> to join a game.\n");
-			
-
-			
-			
-			// Start game
-			String line = is.readLine();
-			
-			if (line.startsWith("START_GAME") || line.startsWith("JOIN_GAME")) {
-				
-				while (true) {
-					
-					line = is.readLine();
-					
-					if (line.startsWith("END_GAME")) {
-						break;
-					}
-					
-					// Prints board to all clients
-					synchronized (this) {
-						for (int i = 0; i < maxClients; i++) {
-							if (threads[i] != null && threads[i].clientName != null) {
-								threads[i].os.println(gameBoard.printBoard());
-							}
-						}
-					}
-					
-					// Gets player move
-					synchronized (this) {
-						for (int i = 0; i < maxClients; i++) {
-							if (threads[i] != null && threads[i] == this) {
-								
-								//int x = gameBoard.getBombermanX();
-								//int y = gameBoard.getBombermanY();
-
-								int x = gameBoard.getBombermanX(i);
-								int y = gameBoard.getBombermanY(i);
-
-								
-								if (x == gameBoard.Xwin && y == gameBoard.Ywin) {
-									this.os.println("Player " + getClientName() + " has found the door!");
-                                                                        
-									break;
-								}
-								
-								if (line.startsWith("U") || line.startsWith("u")) {
-									if (gameBoard.move(x, y, "UP",i)) {
-										String move = "Moved: UP";
-										threads[i].os.println(move);
-				
-									}
-									else {
-										String invalid = "\nInvalid Move!\n";
-										threads[i].os.println(invalid);
-									}
-								}
-								else if (line.startsWith("D") || line.startsWith("d")) {
-									if (gameBoard.move(x, y, "DOWN",i)) {
-										String move = "Moved: DOWN";
-										threads[i].os.println(move);
-				
-									}
-									else {
-										String invalid = "\nInvalid Move!\n";
-										threads[i].os.println(invalid);
-									}
-								}
-								else if (line.startsWith("L") || line.startsWith("l")) {
-									if (gameBoard.move(x, y, "LEFT",i)) {
-										String move = "Moved: LEFT";
-										threads[i].os.println(move);
-				
-									}
-									else {
-										String invalid = "\nInvalid Move!\n";
-										threads[i].os.println(invalid);
-									}
-								}
-								else if (line.startsWith("R") || line.startsWith("r")) {
-									if (gameBoard.move(x, y, "RIGHT",i)) {
-										String move = "Moved: RIGHT";
-										threads[i].os.println(move);
-				
-									}
-									else {
-										String invalid = "\nInvalid Move!\n";
-										threads[i].os.println(invalid);
-									}
-								}
-								else if (line.startsWith("B") || line.startsWith("b")) {
-									if (gameBoard.move(x, y, "BOMB", i)) {
-										String bomb = "Placed: BOMB";
-										threads[i].os.println(bomb);
-				
-									}
-									else {
-										String invalid = "\nInvalid Move!\n";
-										threads[i].os.println(invalid);
-									}
-								}
-                                                                
-								else if (line.startsWith("P") || line.startsWith("p")) {
-									if (gameBoard.move(x, y, "PLAY", i)) {
-										String play = "Player deployed";
-										threads[i].os.println(play);
-				
-									}
-									else {
-										String invalid = "\nInvalid Move!\n";
-										threads[i].os.println(invalid);
-									}
-								}
-								break;
-							}
-						}
-					}
-					
-					// Prints board again to all clients to show movement
-					synchronized (this) {
-						for (int i = 0; i < maxClients; i++) {
-							if (threads[i] != null && threads[i].clientName != null) {
-								threads[i].os.println(gameBoard.printBoard());
-							}
-						}
-					}
-					
-
-				}
-			}
-			
-				
-//				//Determines new user joined the game
-//				synchronized (this) {
-//					
-//					for (int i = 0; i < maxClients; i++) {
-//						if (threads[i] != null && threads[i] != this) {
-//							threads[i].os.println("\nA new player " + getClientName() + " has joined the game!");
-//						}
-//					}
-//				}
-//			
-//			// Client has left game
-//			synchronized (this) {
-//				for (int i = 0; i < maxClients; i++) {
-//					if (threads[i] != null && threads[i] != this
-//							&& threads[i].clientName != null) {
-//						threads[i].os.println("The player " + getClientName() + " has left the game");
-//					}
-//				}
-//			}
-				
-			os.println("Game ended...");
-			// Set left player to null so new client can join
-			synchronized (this) {
-				for (int i = 0; i < maxClients; i++) {
-					if (threads[i] == this) {
-						threads[i] = null;
-						
-					}
-				}
-			}
-
-			is.close();
-			os.close();
-			clientSocket.close();
-			
+		} catch (UnknownHostException e) {
+			//System.err.println("Don't know about host " + host);
+			return false;
 		} catch (IOException e) {
-			System.err.println("IOException: " + e);
+			//System.err.println("Couldn't get I/O for the connection to the host "
+			//		+ host);
+			return false;
 		}
 		
+		// Create PlayerClient thread to read from Server
+		if (clientSocket != null && os != null && is != null) {
+			try {
+
+				new Thread(new PlayerClient()).start();
+				while (!closed) {
+					os.println(input.readLine().trim());
+				}
+				
+				os.close();
+				is.close();
+				clientSocket.close();
+			} catch (IOException e) {
+				System.err.println("IOException:  " + e);
+				return false;
+			}
+			return true;
+		}
+		return true;	
 	}
 
-
-}
-
-class QuitCheck extends Thread {
-    
-    QuitCheck(){
+    static void input(InputStreamReader inputStreamReader) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    @Override
-    public  void run(){
-        while(true){
-            //System.out.println("Playing is now: "+Playing);
-            if(Server.Playing==false){
-                System.exit(0);
-            }
-        }
-    }
+	
+	@Override
+	public void run() {
+		
+		String responseLine;
+                String[] boardarray = {"TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY","TEMPORARY"};
+                String temp;
+                int i = 0;
+                int j = 0;
+		try {
+			
+			while ((responseLine = is.readLine()) != null) {
+                            
+                            if(i==14){
+                                while(i>0){
+                                    if(j==0){
+                                        label.setText("");
+                                    }
+                                    temp = label.getText().replaceAll("</html>", "");
+                                    temp = temp.replaceAll("</p>", "");
+                                    temp = temp.replaceAll("<pre>", "");
+                                    temp = temp.replaceAll("</pre>", "");
+                                    temp = temp.replaceAll("<html>", "");
+                                    temp = temp.replaceAll("<p>", "");
+                                    label.setText("<html>" + "<pre>" + "<p>"+ temp + boardarray[j] + " <br>" +"</p>"+ "</pre>" + "</html>");
+                                    i--;
+                                    j++;
+                                }
+                                j = 0;
+                                
+                            }
+                            if(responseLine.length()==15){
+                                boardarray[i]= responseLine;
+                                
+                                i++;
+                            }
+                            else{
+                                i=0;
+                                //label.setText("<html>" + "<p>" + responseLine + "</p>" + "</html>");
+                            }
+                            System.out.println(responseLine);
+                            if (responseLine.indexOf("END_GAME") != -1)
+                                break;
+			}
+			closed = true;
+		} catch (IOException e) {
+			System.err.println("IOException:  " + e);
+		}
+	}
+	
+	public boolean testEmptyBuffer() {
+
+		return createSocket("localhost", 5555);
+	}
+
 }
