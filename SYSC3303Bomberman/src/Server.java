@@ -1,7 +1,10 @@
 
 import java.awt.BorderLayout;
+import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -23,12 +26,12 @@ public class Server {
         public static EndGame endgame = new EndGame();
         public static JButton end = new JButton("End game");
         public static JFrame frame = new JFrame("Server console");
-        
+
         public void initialize(){
             
         }
 	public static void main(String args[]) {
-                       
+
                 label = new JLabel();
                 frame.setMinimumSize(new Dimension(500, 200));
                 frame.setBounds(100,100,450,300);
@@ -43,14 +46,14 @@ public class Server {
                 
                 
 		int portNumber = 9000;
-		
+
 		//Optional portNumber add feature
 		if (args.length < 1) {
 			System.out.println("portNumber= " + portNumber);
 		} else {
 			portNumber = Integer.valueOf(args[0]).intValue();
 		}
-		
+
 		try {
 			serverSocket = new ServerSocket(portNumber);
 		} catch (IOException e) {
@@ -58,7 +61,7 @@ public class Server {
 		}
 		QuitCheck check = new QuitCheck();
                 check.start();
-                
+
 		// Accepts max number of clients (4) to server
 		while (true) {
 			try {
@@ -66,6 +69,7 @@ public class Server {
 				int i = 0;
 				for (i = 0; i < maxClients; i++) {
 					if (threads[i] == null) {
+						System.out.println("New connection!");
 						(threads[i] = new ClientThread(clientSocket, threads, gameBoard, i)).start();
 						break;
 					}
@@ -83,22 +87,24 @@ public class Server {
 		}
                 
 	}
-        
+
 }
 
 
 class ClientThread extends Thread {
-	
+
 	private String clientName = null;
 	private Socket clientSocket = null;
-        private int playernumber;
+    private int playernumber;
 
 	private DataInputStream is = null;
 	private PrintStream os = null;
-	
+
 	private final ClientThread[] threads;
 	private int maxClients;
+
 	private GameBoard gameBoard;
+
 	public ClientThread(Socket clientSocket, ClientThread[] threads, GameBoard board,int i) {
         this.playernumber = i;
 		this.clientSocket = clientSocket;
@@ -106,7 +112,7 @@ class ClientThread extends Thread {
 		maxClients = threads.length;
 		this.gameBoard = board;
 	}
-	
+
 	public int getMaxClients() {
 		return maxClients;
 	}
@@ -118,7 +124,7 @@ class ClientThread extends Thread {
 	public ClientThread[] getThreads() {
 		return threads;
 	}
-	
+
 	public String getClientName() {
 		return clientName;
 	}
@@ -139,36 +145,58 @@ class ClientThread extends Thread {
 
 		int maxClient = getMaxClients();
 		ClientThread[] threads = getThreads();
-		
+
 		try {
 
 			is = new DataInputStream(clientSocket.getInputStream());
 			os = new PrintStream(clientSocket.getOutputStream());
-			
+
 			//Get PlayerClient's name
 			String name;
 			os.println("Enter your name: ");
 			name = is.readLine().trim();
 			setClientName(name);
-			
-			os.println("Welcome " + getClientName() + " to Bomberman.\nTo start a game type <START_GAME> or <JOIN_GAME> to join a game.\n");
-			
 
-			
-			
+			os.println("Welcome " + getClientName() + " to Bomberman.\nTo start a game type <START_GAME> or <JOIN_GAME> to join a game.\n");
+
+
+
+
 			// Start game
 			String line = is.readLine();
-			
+
 			if (line.startsWith("START_GAME") || line.startsWith("JOIN_GAME")) {
-				
+
 				while (true) {
-					
+
 					line = is.readLine();
-					
+
 					if (line.startsWith("END_GAME")) {
 						break;
 					}
-					
+
+					// Scalability testing
+					if (line.startsWith("scale")) {
+						String test = null;
+						BufferedReader r = new BufferedReader(new FileReader("/Users/Calvin/Documents/SYSC3303FinalBomberman/SYSC3303Bomberman/scalabilitytest.txt"));
+						while ((test = r.readLine()) != null) {
+							//is.read(test.getBytes());
+							if (test.startsWith("U") || line.startsWith("u")) {
+								if (gameBoard.move(0, 0, "UP",0)) {
+									String move = "Moved: UP";
+									os.println(move);
+									os.println(gameBoard.printBoard());
+
+								}
+								else {
+									String invalid = "\nInvalid Move!\n";
+									os.println(invalid);
+									os.println(gameBoard.printBoard());
+								}
+							}
+						}
+					}
+
 					// Prints board to all clients
 					synchronized (this) {
 						for (int i = 0; i < maxClients; i++) {
@@ -177,30 +205,30 @@ class ClientThread extends Thread {
 							}
 						}
 					}
-					
+
 					// Gets player move
 					synchronized (this) {
 						for (int i = 0; i < maxClients; i++) {
 							if (threads[i] != null && threads[i] == this) {
-								
+
 								//int x = gameBoard.getBombermanX();
 								//int y = gameBoard.getBombermanY();
 
 								int x = gameBoard.getBombermanX(i);
 								int y = gameBoard.getBombermanY(i);
 
-								
+
 								if (x == gameBoard.Xwin && y == gameBoard.Ywin) {
 									this.os.println("Player " + getClientName() + " has found the door!");
                                                                         
 									break;
 								}
-								
+
 								if (line.startsWith("U") || line.startsWith("u")) {
 									if (gameBoard.move(x, y, "UP",i)) {
 										String move = "Moved: UP";
 										threads[i].os.println(move);
-				
+
 									}
 									else {
 										String invalid = "\nInvalid Move!\n";
@@ -211,7 +239,7 @@ class ClientThread extends Thread {
 									if (gameBoard.move(x, y, "DOWN",i)) {
 										String move = "Moved: DOWN";
 										threads[i].os.println(move);
-				
+
 									}
 									else {
 										String invalid = "\nInvalid Move!\n";
@@ -222,7 +250,7 @@ class ClientThread extends Thread {
 									if (gameBoard.move(x, y, "LEFT",i)) {
 										String move = "Moved: LEFT";
 										threads[i].os.println(move);
-				
+
 									}
 									else {
 										String invalid = "\nInvalid Move!\n";
@@ -233,7 +261,7 @@ class ClientThread extends Thread {
 									if (gameBoard.move(x, y, "RIGHT",i)) {
 										String move = "Moved: RIGHT";
 										threads[i].os.println(move);
-				
+
 									}
 									else {
 										String invalid = "\nInvalid Move!\n";
@@ -244,7 +272,7 @@ class ClientThread extends Thread {
 									if (gameBoard.move(x, y, "BOMB", i)) {
 										String bomb = "Placed: BOMB";
 										threads[i].os.println(bomb);
-				
+
 									}
 									else {
 										String invalid = "\nInvalid Move!\n";
@@ -256,7 +284,7 @@ class ClientThread extends Thread {
 									if (gameBoard.move(x, y, "PLAY", i)) {
 										String play = "Player deployed";
 										threads[i].os.println(play);
-				
+
 									}
 									else {
 										String invalid = "\nInvalid Move!\n";
@@ -267,7 +295,7 @@ class ClientThread extends Thread {
 							}
 						}
 					}
-					
+
 					// Prints board again to all clients to show movement
 					synchronized (this) {
 						for (int i = 0; i < maxClients; i++) {
@@ -276,12 +304,12 @@ class ClientThread extends Thread {
 							}
 						}
 					}
-					
+
 
 				}
 			}
-			
-				
+
+
 //				//Determines new user joined the game
 //				synchronized (this) {
 //					
@@ -301,14 +329,14 @@ class ClientThread extends Thread {
 //					}
 //				}
 //			}
-				
+
 			os.println("Game ended...");
 			// Set left player to null so new client can join
 			synchronized (this) {
 				for (int i = 0; i < maxClients; i++) {
 					if (threads[i] == this) {
 						threads[i] = null;
-						
+
 					}
 				}
 			}
@@ -316,11 +344,11 @@ class ClientThread extends Thread {
 			is.close();
 			os.close();
 			clientSocket.close();
-			
+
 		} catch (IOException e) {
 			System.err.println("IOException: " + e);
 		}
-		
+
 	}
 
 
