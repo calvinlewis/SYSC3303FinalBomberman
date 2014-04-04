@@ -1,6 +1,12 @@
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -17,7 +23,7 @@ public class PlayerClient implements Runnable {
 	private static BufferedReader input = null;
 	private static boolean closed = false;
 	
-
+	static File file = new File("/Users/Calvin/Documents/SYSC3303FinalBomberman/SYSC3303Bomberman/scalability.txt");
 	
 
 	public static void main(String[] args) {
@@ -31,7 +37,7 @@ public class PlayerClient implements Runnable {
 			host = args[0];
 			portNumber = Integer.valueOf(args[1]).intValue();
 		}
-		
+		makeTestFile();
 		createSocket(host, portNumber);
 	}
 	
@@ -46,11 +52,10 @@ public class PlayerClient implements Runnable {
 			is = new DataInputStream(clientSocket.getInputStream());
 			
 		} catch (UnknownHostException e) {
-			//System.err.println("Don't know about host " + host);
+			System.err.println("Don't know about host " + host);
 			return false;
 		} catch (IOException e) {
-			//System.err.println("Couldn't get I/O for the connection to the host "
-			//		+ host);
+			System.err.println("Couldn't get I/O for the connection to the host" + host);
 			return false;
 		}
 		
@@ -60,9 +65,10 @@ public class PlayerClient implements Runnable {
 
 				new Thread(new PlayerClient()).start();
 				while (!closed) {
+					
 					os.println(input.readLine().trim());
+
 				}
-				
 				os.close();
 				is.close();
 				clientSocket.close();
@@ -83,6 +89,8 @@ public class PlayerClient implements Runnable {
 			
 			while ((responseLine = is.readLine()) != null) {
 				System.out.println(responseLine);
+
+					
 				if (responseLine.indexOf("END_GAME") != -1)
 					break;
 			}
@@ -95,6 +103,22 @@ public class PlayerClient implements Runnable {
 	public boolean testEmptyBuffer() {
 
 		return createSocket("localhost", 5555);
+	}
+	
+	public static void makeTestFile() {
+		try {
+			BufferedWriter output = new BufferedWriter(new FileWriter(file));
+			output.write("Calvin");
+			output.write("START_GAME");
+			for (int i=0; i<5000; i++) {
+				output.write("UP");
+			}
+			output.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 }

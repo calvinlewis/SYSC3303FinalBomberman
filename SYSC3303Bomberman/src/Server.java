@@ -1,6 +1,9 @@
 
+import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -40,6 +43,7 @@ public class Server {
 				int i = 0;
 				for (i = 0; i < maxClients; i++) {
 					if (threads[i] == null) {
+						System.out.println("New connection!");
 						(threads[i] = new ClientThread(clientSocket, threads, gameBoard, i)).start();
 						break;
 					}
@@ -124,7 +128,7 @@ class ClientThread extends Thread {
 			os.println("Enter your name: ");
 			name = is.readLine().trim();
 			setClientName(name);
-			
+
 			os.println("Welcome " + getClientName() + " to Bomberman.\nTo start a game type <START_GAME> or <JOIN_GAME> to join a game.\n");
 			
 
@@ -141,6 +145,28 @@ class ClientThread extends Thread {
 					
 					if (line.startsWith("END_GAME")) {
 						break;
+					}
+					
+					// Scalability testing
+					if (line.startsWith("scale")) {
+						String test = null;
+						BufferedReader r = new BufferedReader(new FileReader("/Users/Calvin/Documents/SYSC3303FinalBomberman/SYSC3303Bomberman/scalabilitytest.txt"));
+						while ((test = r.readLine()) != null) {
+							//is.read(test.getBytes());
+							if (test.startsWith("U") || line.startsWith("u")) {
+								if (gameBoard.move(0, 0, "UP",0)) {
+									String move = "Moved: UP";
+									os.println(move);
+									os.println(gameBoard.printBoard());
+			
+								}
+								else {
+									String invalid = "\nInvalid Move!\n";
+									os.println(invalid);
+									os.println(gameBoard.printBoard());
+								}
+							}
+						}
 					}
 					
 					// Prints board to all clients
