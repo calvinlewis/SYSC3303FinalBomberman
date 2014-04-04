@@ -1,12 +1,13 @@
 
-import java.io.BufferedReader;
+import java.awt.BorderLayout;
 import java.io.DataInputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import javax.swing.*;
+import java.awt.event.*;
+import java.awt.Dimension;
 
 
 public class Server {
@@ -16,11 +17,31 @@ public class Server {
 
 	private static final int maxClients = 4;
 	private static final ClientThread[] threads = new ClientThread[maxClients];
-	
+	public static boolean Playing = true;
 	private static GameBoard gameBoard = new GameBoard(15,15,1);
-
+        public static JLabel label;
+        public static EndGame endgame = new EndGame();
+        public static JButton end = new JButton("End game");
+        public static JFrame frame = new JFrame("Server console");
+        
+        public void initialize(){
+            
+        }
 	public static void main(String args[]) {
-
+                       
+                label = new JLabel();
+                frame.setMinimumSize(new Dimension(500, 200));
+                frame.setBounds(100,100,450,300);
+                label.setText("Clients can be run now to play the game. To quit, press end game.");
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.pack();
+                frame.setVisible(true);
+                frame.setLayout(new BorderLayout());
+                end.addActionListener(endgame);
+                frame.add(label, BorderLayout.EAST);
+                frame.add(end, BorderLayout.WEST);
+                
+                
 		int portNumber = 9000;
 		
 		//Optional portNumber add feature
@@ -35,7 +56,9 @@ public class Server {
 		} catch (IOException e) {
 			System.out.println("IOException: " + e);
 		}
-		
+		QuitCheck check = new QuitCheck();
+                check.start();
+                
 		// Accepts max number of clients (4) to server
 		while (true) {
 			try {
@@ -43,7 +66,6 @@ public class Server {
 				int i = 0;
 				for (i = 0; i < maxClients; i++) {
 					if (threads[i] == null) {
-						System.out.println("New connection!");
 						(threads[i] = new ClientThread(clientSocket, threads, gameBoard, i)).start();
 						break;
 					}
@@ -57,9 +79,11 @@ public class Server {
 			} catch (IOException e) {
 				System.out.println("IOException" + e);
 			}
+                        
 		}
+                
 	}
-
+        
 }
 
 
@@ -67,16 +91,14 @@ class ClientThread extends Thread {
 	
 	private String clientName = null;
 	private Socket clientSocket = null;
-    private int playernumber;
+        private int playernumber;
 
 	private DataInputStream is = null;
 	private PrintStream os = null;
 	
 	private final ClientThread[] threads;
 	private int maxClients;
-	
 	private GameBoard gameBoard;
-
 	public ClientThread(Socket clientSocket, ClientThread[] threads, GameBoard board,int i) {
         this.playernumber = i;
 		this.clientSocket = clientSocket;
@@ -128,7 +150,7 @@ class ClientThread extends Thread {
 			os.println("Enter your name: ");
 			name = is.readLine().trim();
 			setClientName(name);
-
+			
 			os.println("Welcome " + getClientName() + " to Bomberman.\nTo start a game type <START_GAME> or <JOIN_GAME> to join a game.\n");
 			
 
@@ -145,28 +167,6 @@ class ClientThread extends Thread {
 					
 					if (line.startsWith("END_GAME")) {
 						break;
-					}
-					
-					// Scalability testing
-					if (line.startsWith("scale")) {
-						String test = null;
-						BufferedReader r = new BufferedReader(new FileReader("/Users/Calvin/Documents/SYSC3303FinalBomberman/SYSC3303Bomberman/scalabilitytest.txt"));
-						while ((test = r.readLine()) != null) {
-							//is.read(test.getBytes());
-							if (test.startsWith("U") || line.startsWith("u")) {
-								if (gameBoard.move(0, 0, "UP",0)) {
-									String move = "Moved: UP";
-									os.println(move);
-									os.println(gameBoard.printBoard());
-			
-								}
-								else {
-									String invalid = "\nInvalid Move!\n";
-									os.println(invalid);
-									os.println(gameBoard.printBoard());
-								}
-							}
-						}
 					}
 					
 					// Prints board to all clients
@@ -192,6 +192,7 @@ class ClientThread extends Thread {
 								
 								if (x == gameBoard.Xwin && y == gameBoard.Ywin) {
 									this.os.println("Player " + getClientName() + " has found the door!");
+                                                                        
 									break;
 								}
 								
@@ -323,4 +324,19 @@ class ClientThread extends Thread {
 	}
 
 
+}
+
+class QuitCheck extends Thread {
+    
+    QuitCheck(){
+    }
+    @Override
+    public  void run(){
+        while(true){
+            //System.out.println("Playing is now: "+Playing);
+            if(Server.Playing==false){
+                System.exit(0);
+            }
+        }
+    }
 }
