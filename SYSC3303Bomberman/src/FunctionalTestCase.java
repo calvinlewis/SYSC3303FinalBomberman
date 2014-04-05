@@ -14,6 +14,8 @@ import org.junit.Test;
 
 public class FunctionalTestCase {
 
+	GameBoard gameboard;
+	
 	@Test
 	public void test() {
 		
