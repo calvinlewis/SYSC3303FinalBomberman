@@ -48,10 +48,35 @@ import java.util.concurrent.Semaphore;
 		createBoard();
 	}
 
+	GameBoard() {
+		
+	}
+	
 	public char[][] getBoard() {
 		return gameBoard;
 	}
 
+	public GameBoard testGameBoard() {
+		GameBoard test = new GameBoard(5,5,1);
+		test.gameBoard[0][0] = ' ';
+		test.gameBoard[1][0] = ' ';
+		test.Xwin = 0;
+		test.Ywin = 1;
+		test.gameBoard[0][1] = DOOR;
+		test.gameBoard[2][0] = POWER;
+		return test;
+	}
+	
+	public GameBoard testGameBoardPower() {
+		GameBoard test = new GameBoard(5,5,1);
+		Powers[0][0]= 0;
+		Powers[0][1]= 1;
+		test.gameBoard[0][0] = ' ';
+		test.gameBoard[1][0] = ' ';
+		test.gameBoard[0][1] = POWER;
+		return test;
+	}
+	
 	public static void createBoard() {
 
 		gameBoard = new char[xSize][ySize];

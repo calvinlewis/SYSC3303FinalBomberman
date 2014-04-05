@@ -196,5 +196,9 @@ public class PlayerClient implements Runnable {
 
 		return createSocket("localhost", 5555);
 	}
+	
+	public boolean testFullBuffer() {
+		return createSocket("localhost", 9000);
+	}
 
 }
