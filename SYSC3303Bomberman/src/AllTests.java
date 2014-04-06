@@ -5,7 +5,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ ConcurrencyTestCase.class, FunctionalTestCase.class, ScalabilityTestCase.class })
+@SuiteClasses({ FunctionalTestCase.class, ScalabilityTestCase.class, ConcurrencyTestCase.class  })
 public class AllTests {
 
 }

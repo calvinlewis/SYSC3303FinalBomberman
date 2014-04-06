@@ -5,9 +5,9 @@ import org.junit.Test;
 
 public class ScalabilityTestCase {
 
-	GameBoard gameboard;
+	GameBoard gameboard, gameboard2;
 	@Test
-	public void test() {
+	public void testFourPlayerHeavyLoad() {
 		System.out.println("** SCALABILITY TEST **\n");
 
 		gameboard = new GameBoard(11,11,1);
@@ -37,6 +37,30 @@ public class ScalabilityTestCase {
 				System.out.println("Invalid move!");
 				
 			System.out.println(gameboard.printBoard());
+		}
+		
+		gameboard = null;
+	}
+	
+	@Test
+	public void testOnePlayerLightLoad() {
+		System.out.println("** SCALABILITY TEST **\n");
+
+		gameboard2 = new GameBoard(11,11,1);
+		System.out.println(gameboard2.printBoard());
+		gameboard2.move(0, 0, "PLAY", 0);
+		System.out.println(gameboard2.printBoard());
+		
+		for (int i=0; i<10; i++) {
+			int x0 = gameboard2.getBombermanX(0);
+			int y0 = gameboard2.getBombermanY(0);
+			
+			if (gameboard2.move(x0, y0, "UP", 0)) { }
+			else
+				System.out.println("Invalid Move!");
+			
+			System.out.println(gameboard2.printBoard());
+
 		}
 	}
 
